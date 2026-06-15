@@ -30,6 +30,16 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      await googleLogin();
+      toast.success("Login successful!");
+      navigate(from, { replace: true });
+    } catch (error) {
+      toast.error("Google login failed!");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
       <div className="max-w-md w-full">
@@ -95,7 +105,7 @@ const Login = () => {
 
             {/* Google Login */}
             <button
-              onClick={() => toast.error("Google login coming soon!")}
+              onClick={handleGoogleLogin}
               className="w-full border-2 border-gray-200 hover:border-green-400 text-gray-700 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-3"
             >
               <img

@@ -1,5 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+import { auth, googleProvider } from "../firebase.config";
+import { signInWithPopup, signOut } from "firebase/auth";
 
 export const AuthContext = createContext(null);
 
@@ -29,10 +31,13 @@ const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  const googleLogin = async (userData) => {
+  const googleLogin = async () => {
+    const result = await signInWithPopup(auth, googleProvider);
+    const { displayName, email, photoURL } = result.user;
+
     const response = await axios.post(
       `${API_URL}/auth/google`,
-      userData,
+      { name: displayName, email, photoURL },
       { withCredentials: true }
     );
     setUser(response.data.user);
@@ -40,12 +45,14 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    await signOut(auth);
     await axios.post(
       `${API_URL}/auth/logout`,
       {},
       { withCredentials: true }
     );
     setUser(null);
+    localStorage.removeItem("sportnest-user");
   };
 
   useEffect(() => {
@@ -59,8 +66,6 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       localStorage.setItem("sportnest-user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("sportnest-user");
     }
   }, [user]);
 

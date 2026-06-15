@@ -4,7 +4,7 @@ import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
 
 const Register = () => {
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -52,6 +52,16 @@ const Register = () => {
       toast.error(error.response?.data?.message || "Registration failed!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await googleLogin();
+      toast.success("Registration successful!");
+      navigate("/");
+    } catch (error) {
+      toast.error("Google login failed!");
     }
   };
 
@@ -152,7 +162,7 @@ const Register = () => {
 
             {/* Google Login */}
             <button
-              onClick={() => toast.error("Google login coming soon!")}
+              onClick={handleGoogleLogin}
               className="w-full border-2 border-gray-200 hover:border-green-400 text-gray-700 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-3"
             >
               <img
