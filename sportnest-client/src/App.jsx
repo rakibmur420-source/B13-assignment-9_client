@@ -1,3 +1,5 @@
+
+import ThemeProvider from "./context/ThemeContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthProvider from "./context/AuthContext";
 import Navbar from "./components/Navbar";
@@ -15,6 +17,7 @@ import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <BrowserRouter>
         <Navbar />
@@ -48,6 +51,7 @@ function App() {
         <Footer />
       </BrowserRouter>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

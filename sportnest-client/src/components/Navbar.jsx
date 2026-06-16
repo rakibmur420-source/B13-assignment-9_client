@@ -1,3 +1,4 @@
+import useTheme from "../hooks/theme-hook";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
@@ -5,6 +6,7 @@ import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -15,7 +17,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-gray-900 text-white sticky top-0 z-50 shadow-lg">
+    <nav className="bg-gray-900 dark:bg-black text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -40,6 +42,13 @@ const Navbar = () => {
 
         {/* Auth Buttons */}
         <div className="hidden md:flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="text-xl hover:scale-110 transition"
+            title="Toggle theme"
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
           {user ? (
             <div className="relative group">
               <img
@@ -74,12 +83,21 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-white"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? "✕" : "☰"}
-        </button>
+        <div className="md:hidden flex items-center gap-4">
+          <button
+            onClick={toggleTheme}
+            className="text-xl hover:scale-110 transition"
+            title="Toggle theme"
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+          <button
+            className="text-white"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
