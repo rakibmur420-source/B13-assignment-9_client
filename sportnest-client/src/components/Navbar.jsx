@@ -1,21 +1,49 @@
 import useTheme from "../hooks/theme-hook";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
+import {
+  FaCalendarAlt,
+  FaPlusCircle,
+  FaCog,
+  FaSignOutAlt,
+  FaChevronDown,
+} from "react-icons/fa";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   const handleLogout = async () => {
     await logout();
     toast.success("Logged out successfully!");
+    setProfileOpen(false);
     navigate("/login");
   };
+
+  // Close profile dropdown when clicking outside it
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const navLinkClass = ({ isActive }) =>
+    `transition ${
+      isActive
+        ? "text-green-400 font-semibold"
+        : "hover:text-green-400"
+    }`;
 
   return (
     <motion.nav
@@ -35,13 +63,13 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
-          <Link to="/" className="hover:text-green-400 transition">Home</Link>
-          <Link to="/facilities" className="hover:text-green-400 transition">All Facilities</Link>
+          <NavLink to="/" className={navLinkClass} end>Home</NavLink>
+          <NavLink to="/facilities" className={navLinkClass}>All Facilities</NavLink>
           {user && (
             <>
-              <Link to="/add-facility" className="hover:text-green-400 transition">Add Facility</Link>
-              <Link to="/manage-facilities" className="hover:text-green-400 transition">Manage Facilities</Link>
-              <Link to="/my-bookings" className="hover:text-green-400 transition">My Bookings</Link>
+              <NavLink to="/add-facility" className={navLinkClass}>Add Facility</NavLink>
+              <NavLink to="/manage-facilities" className={navLinkClass}>Manage Facilities</NavLink>
+              <NavLink to="/my-bookings" className={navLinkClass}>My Bookings</NavLink>
             </>
           )}
         </div>
@@ -56,27 +84,69 @@ const Navbar = () => {
             {theme === "light" ? "🌙" : "☀️"}
           </button>
           {user ? (
-            <div className="relative group">
-              <img
-                src={user.photoURL || "https://i.ibb.co/4pDNDk1/avatar.png"}
-                alt="profile"
-                className="w-10 h-10 rounded-full cursor-pointer border-2 border-green-400"
-              />
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg shadow-lg hidden group-hover:block">
-                <div className="px-4 py-2 border-b dark:border-gray-700">
-                  <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
-                </div>
-                <Link to="/my-bookings" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">My Bookings</Link>
-                <Link to="/add-facility" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Add Facility</Link>
-                <Link to="/manage-facilities" className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Manage Facilities</Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-red-500"
-                >
-                  Logout
-                </button>
-              </div>
+            <div className="relative" ref={profileRef}>
+              <button
+                onClick={() => setProfileOpen((prev) => !prev)}
+                className="flex items-center gap-2 bg-gray-800 dark:bg-gray-900 hover:bg-gray-700 rounded-full pl-1 pr-3 py-1 transition"
+              >
+                <img
+                  src={user.photoURL || "https://i.ibb.co/4pDNDk1/avatar.png"}
+                  alt="profile"
+                  className="w-8 h-8 rounded-full border-2 border-green-400"
+                />
+                <span className="text-sm max-w-[110px] truncate">
+                  {user.name || user.email}
+                </span>
+                <FaChevronDown
+                  className={`text-xs transition-transform ${
+                    profileOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              <AnimatePresence>
+                {profileOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-lg shadow-xl overflow-hidden border dark:border-gray-700"
+                  >
+                    <div className="px-4 py-3 border-b dark:border-gray-700">
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Signed in as</p>
+                      <p className="font-semibold text-sm truncate">{user.email}</p>
+                    </div>
+                    <Link
+                      to="/my-bookings"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    >
+                      <FaCalendarAlt className="text-green-500" /> My Bookings
+                    </Link>
+                    <Link
+                      to="/add-facility"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    >
+                      <FaPlusCircle className="text-green-500" /> Add Facility
+                    </Link>
+                    <Link
+                      to="/manage-facilities"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm"
+                    >
+                      <FaCog className="text-green-500" /> Manage Facilities
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 text-left px-4 py-2.5 hover:bg-red-50 dark:hover:bg-gray-700 text-sm text-red-500 border-t dark:border-gray-700"
+                    >
+                      <FaSignOutAlt /> Log Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <Link
@@ -116,13 +186,13 @@ const Navbar = () => {
             transition={{ duration: 0.3 }}
             className="md:hidden bg-gray-800 dark:bg-gray-950 px-4 py-3 flex flex-col gap-3 overflow-hidden"
           >
-            <Link to="/" className="hover:text-green-400" onClick={() => setMenuOpen(false)}>Home</Link>
-            <Link to="/facilities" className="hover:text-green-400" onClick={() => setMenuOpen(false)}>All Facilities</Link>
+            <NavLink to="/" end className={navLinkClass} onClick={() => setMenuOpen(false)}>Home</NavLink>
+            <NavLink to="/facilities" className={navLinkClass} onClick={() => setMenuOpen(false)}>All Facilities</NavLink>
             {user && (
               <>
-                <Link to="/add-facility" className="hover:text-green-400" onClick={() => setMenuOpen(false)}>Add Facility</Link>
-                <Link to="/manage-facilities" className="hover:text-green-400" onClick={() => setMenuOpen(false)}>Manage Facilities</Link>
-                <Link to="/my-bookings" className="hover:text-green-400" onClick={() => setMenuOpen(false)}>My Bookings</Link>
+                <NavLink to="/add-facility" className={navLinkClass} onClick={() => setMenuOpen(false)}>Add Facility</NavLink>
+                <NavLink to="/manage-facilities" className={navLinkClass} onClick={() => setMenuOpen(false)}>Manage Facilities</NavLink>
+                <NavLink to="/my-bookings" className={navLinkClass} onClick={() => setMenuOpen(false)}>My Bookings</NavLink>
                 <button onClick={handleLogout} className="text-left text-red-400">Logout</button>
               </>
             )}

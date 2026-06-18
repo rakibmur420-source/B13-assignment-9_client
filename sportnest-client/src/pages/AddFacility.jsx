@@ -4,6 +4,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
+import { FaPlusCircle, FaTimesCircle } from "react-icons/fa";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -12,6 +13,7 @@ const AddFacility = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [slotInput, setSlotInput] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     facility_type: "",
@@ -30,34 +32,32 @@ const AddFacility = () => {
     "Tennis",
     "Cricket",
     "Basketball",
-  ];
-
-  const timeSlots = [
-    "06:00 AM - 07:00 AM",
-    "07:00 AM - 08:00 AM",
-    "08:00 AM - 09:00 AM",
-    "09:00 AM - 10:00 AM",
-    "10:00 AM - 11:00 AM",
-    "11:00 AM - 12:00 PM",
-    "12:00 PM - 01:00 PM",
-    "02:00 PM - 03:00 PM",
-    "03:00 PM - 04:00 PM",
-    "04:00 PM - 05:00 PM",
-    "05:00 PM - 06:00 PM",
-    "06:00 PM - 07:00 PM",
-    "07:00 PM - 08:00 PM",
-    "08:00 PM - 09:00 PM",
+    "Volleyball",
   ];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSlotChange = (slot) => {
-    const slots = formData.available_slots.includes(slot)
-      ? formData.available_slots.filter((s) => s !== slot)
-      : [...formData.available_slots, slot];
-    setFormData({ ...formData, available_slots: slots });
+  const handleAddSlot = () => {
+    const trimmed = slotInput.trim();
+    if (!trimmed) return;
+    if (formData.available_slots.includes(trimmed)) {
+      toast.error("Slot already added!");
+      return;
+    }
+    setFormData({
+      ...formData,
+      available_slots: [...formData.available_slots, trimmed],
+    });
+    setSlotInput("");
+  };
+
+  const handleRemoveSlot = (slot) => {
+    setFormData({
+      ...formData,
+      available_slots: formData.available_slots.filter((s) => s !== slot),
+    });
   };
 
   const handleImageUpload = async (e) => {
@@ -87,7 +87,7 @@ const AddFacility = () => {
       return;
     }
     if (formData.available_slots.length === 0) {
-      toast.error("Please select at least one time slot!");
+      toast.error("Please add at least one time slot!");
       return;
     }
     setLoading(true);
@@ -97,7 +97,7 @@ const AddFacility = () => {
         { ...formData, owner_email: user.email },
         { withCredentials: true }
       );
-      toast.success("Facility added successfully!");
+      toast.success("Facility added successfully! 🎉");
       navigate("/manage-facilities");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add facility!");
@@ -116,11 +116,11 @@ const AddFacility = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-10"
         >
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-3">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
             Add <span className="text-green-500">Facility</span>
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            List your sports facility and start accepting bookings.
+            List your sports venue for others to book
           </p>
         </motion.div>
 
@@ -130,48 +130,48 @@ const AddFacility = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8"
         >
-          <div className="space-y-5">
-            {/* Facility Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Facility Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Enter facility name"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
-                required
-              />
-            </div>
-
-            {/* Facility Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Facility Type
-              </label>
-              <select
-                name="facility_type"
-                value={formData.facility_type}
-                onChange={handleChange}
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
-                required
-              >
-                <option value="">Select sport type</option>
-                {sportTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Name & Sport Type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                  Facility Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Green Turf Football Ground"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                  Sport Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="facility_type"
+                  value={formData.facility_type}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                  required
+                >
+                  <option value="">Select sport type</option>
+                  {sportTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Facility Image
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                Facility Image <span className="text-red-500">*</span>
               </label>
               <input
                 type="file"
@@ -180,28 +180,28 @@ const AddFacility = () => {
                 className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
               />
               {imageUploading && (
-                <p className="text-green-500 text-sm mt-1">Uploading image...</p>
+                <p className="text-green-500 text-sm mt-1 animate-pulse">Uploading image...</p>
               )}
               {formData.image && (
                 <img
                   src={formData.image}
                   alt="preview"
-                  className="w-full h-40 object-cover rounded-lg mt-2"
+                  className="w-full h-40 object-cover rounded-lg mt-2 border border-green-300"
                 />
               )}
             </div>
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Location
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                Location <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                placeholder="Enter facility location"
+                placeholder="e.g. Gulshan, Dhaka"
                 className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                 required
               />
@@ -210,29 +210,31 @@ const AddFacility = () => {
             {/* Price & Capacity */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Price Per Hour (৳)
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                  Price/Hr ($) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   name="price_per_hour"
                   value={formData.price_per_hour}
                   onChange={handleChange}
-                  placeholder="Enter price"
+                  placeholder="e.g. 50"
+                  min="1"
                   className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Capacity
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                  Capacity (Players) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   name="capacity"
                   value={formData.capacity}
                   onChange={handleChange}
-                  placeholder="Enter capacity"
+                  placeholder="e.g. 22"
+                  min="1"
                   className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                   required
                 />
@@ -241,35 +243,47 @@ const AddFacility = () => {
 
             {/* Available Time Slots */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Available Time Slots
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                Available Time Slots <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                {timeSlots.map((slot) => (
-                  <label
-                    key={slot}
-                    className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition ${
-                      formData.available_slots.includes(slot)
-                        ? "border-green-500 bg-green-50 dark:bg-green-950"
-                        : "border-gray-200 dark:border-gray-700 hover:border-green-300"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.available_slots.includes(slot)}
-                      onChange={() => handleSlotChange(slot)}
-                      className="accent-green-500"
-                    />
-                    <span className="text-xs text-gray-700 dark:text-gray-300">{slot}</span>
-                  </label>
-                ))}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={slotInput}
+                  onChange={(e) => setSlotInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSlot())}
+                  placeholder="e.g. 09:00 AM - 10:00 AM"
+                  className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 transition bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSlot}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition"
+                >
+                  <FaPlusCircle className="text-xl" />
+                </button>
               </div>
+              {formData.available_slots.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.available_slots.map((slot) => (
+                    <span
+                      key={slot}
+                      className="flex items-center gap-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs px-3 py-1.5 rounded-full"
+                    >
+                      {slot}
+                      <button type="button" onClick={() => handleRemoveSlot(slot)}>
+                        <FaTimesCircle className="text-green-600 dark:text-green-400 hover:text-red-500 transition ml-1" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
+                Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 name="description"
@@ -282,27 +296,27 @@ const AddFacility = () => {
               />
             </div>
 
-            {/* Owner Email */}
+            {/* Owner Email (readonly) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400 mb-1">
                 Owner Email
               </label>
               <input
                 type="email"
-                value={user?.email}
+                value={user?.email || ""}
                 readOnly
-                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400"
+                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3 bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500 cursor-not-allowed"
               />
             </div>
 
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading || imageUploading}
               className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50 text-lg"
             >
               {loading ? "Adding Facility..." : "Add Facility"}
             </button>
-          </div>
+          </form>
         </motion.div>
       </div>
     </div>
