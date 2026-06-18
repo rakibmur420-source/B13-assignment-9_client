@@ -6,9 +6,6 @@ const axiosSecure = axios.create({
   baseURL: API_URL,
   withCredentials: true,
 });
-
-
-
 // Attach token from localStorage to every request
 axiosSecure.interceptors.request.use((config) => {
   const token = localStorage.getItem("sportnest-token");
