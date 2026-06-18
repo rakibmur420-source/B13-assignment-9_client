@@ -17,10 +17,7 @@ const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password, photoURL) => {
     const response = await axios.post(`${API_URL}/auth/register`, {
-      name,
-      email,
-      password,
-      photoURL,
+      name, email, password, photoURL,
     });
     return response.data;
   };
@@ -31,7 +28,9 @@ const AuthProvider = ({ children }) => {
       { email, password },
       { withCredentials: true }
     );
-    setUser(response.data.user);
+    const { user: userData, token } = response.data;
+    setUser(userData);
+    if (token) localStorage.setItem("sportnest-token", token);
     return response.data;
   };
 
@@ -44,19 +43,18 @@ const AuthProvider = ({ children }) => {
       { name: displayName, email, photoURL },
       { withCredentials: true }
     );
-    setUser(response.data.user);
+    const { user: userData, token } = response.data;
+    setUser(userData);
+    if (token) localStorage.setItem("sportnest-token", token);
     return response.data;
   };
 
   const logout = async () => {
     await signOut(auth);
-    await axios.post(
-      `${API_URL}/auth/logout`,
-      {},
-      { withCredentials: true }
-    );
+    await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
     setUser(null);
     localStorage.removeItem("sportnest-user");
+    localStorage.removeItem("sportnest-token");
   };
 
   useEffect(() => {
@@ -66,13 +64,7 @@ const AuthProvider = ({ children }) => {
   }, [user]);
 
   const authInfo = {
-    user,
-    setUser,
-    loading,
-    register,
-    login,
-    googleLogin,
-    logout,
+    user, setUser, loading, register, login, googleLogin, logout,
   };
 
   return (

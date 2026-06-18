@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import Loading from "../components/Loading";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const statusStyles = {
   pending: "bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300",
@@ -15,16 +13,14 @@ const statusStyles = {
 
 const MyBookings = () => {
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${API_URL}/bookings/user/${user.email}`,
-        { withCredentials: true }
-      );
+      const res = await axiosSecure.get(`/bookings/user/${user.email}`);
       setBookings(res.data);
     } catch {
       toast.error("Failed to fetch bookings!");
@@ -45,9 +41,7 @@ const MyBookings = () => {
     );
     if (!confirm) return;
     try {
-      await axios.delete(`${API_URL}/bookings/${id}`, {
-        withCredentials: true,
-      });
+      await axiosSecure.delete(`/bookings/${id}`);
       toast.success("Booking cancelled successfully!");
       fetchBookings();
     } catch {

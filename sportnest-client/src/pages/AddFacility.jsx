@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import { FaPlusCircle, FaTimesCircle } from "react-icons/fa";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const AddFacility = () => {
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -92,10 +92,9 @@ const AddFacility = () => {
     }
     setLoading(true);
     try {
-      await axios.post(
-        `${API_URL}/facilities`,
-        { ...formData, owner_email: user.email },
-        { withCredentials: true }
+      await axiosSecure.post(
+        `/facilities`,
+        { ...formData, owner_email: user.email }
       );
       toast.success("Facility added successfully! 🎉");
       navigate("/manage-facilities");

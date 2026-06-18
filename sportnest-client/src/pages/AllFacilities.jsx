@@ -96,20 +96,37 @@ const AllFacilities = () => {
       const res = await axios.get(`${API_URL}/facilities`, {
         params: { search, type },
       });
-      // Merge DB facilities with defaults — show defaults only if DB has fewer than 6
       const dbData = res.data || [];
+
+      // Filter defaults by search & type client-side
+      const filteredDefaults = DEFAULT_FACILITIES.filter((f) => {
+        const matchSearch = search
+          ? f.name.toLowerCase().includes(search.toLowerCase()) ||
+            f.facility_type.toLowerCase().includes(search.toLowerCase())
+          : true;
+        const matchType = type ? f.facility_type === type : true;
+        return matchSearch && matchType;
+      });
+
       if (dbData.length < 6) {
         const existingNames = dbData.map((f) => f.name.toLowerCase());
-        const extras = DEFAULT_FACILITIES.filter(
+        const extras = filteredDefaults.filter(
           (f) => !existingNames.includes(f.name.toLowerCase())
         );
-        setFacilities([...dbData, ...extras].slice(0, Math.max(dbData.length + extras.length, 6)));
+        setFacilities([...dbData, ...extras]);
       } else {
         setFacilities(dbData);
       }
     } catch {
-      // If API fails, show default facilities
-      setFacilities(DEFAULT_FACILITIES);
+      const filteredDefaults = DEFAULT_FACILITIES.filter((f) => {
+        const matchSearch = search
+          ? f.name.toLowerCase().includes(search.toLowerCase()) ||
+            f.facility_type.toLowerCase().includes(search.toLowerCase())
+          : true;
+        const matchType = type ? f.facility_type === type : true;
+        return matchSearch && matchType;
+      });
+      setFacilities(filteredDefaults);
     } finally {
       setLoading(false);
     }

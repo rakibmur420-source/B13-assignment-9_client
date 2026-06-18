@@ -5,12 +5,14 @@ import { motion } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import Loading from "../components/Loading";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const FacilityDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const [facility, setFacility] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,20 +49,16 @@ const FacilityDetails = () => {
     }
     setBookingLoading(true);
     try {
-      await axios.post(
-        `${API_URL}/bookings`,
-        {
-          facility_id: facility._id,
-          facility_name: facility.name,
-          user_email: user.email,
-          booking_date: formData.booking_date,
-          time_slot: formData.time_slot,
-          hours: formData.hours,
-          total_price: totalPrice,
-          status: "pending",
-        },
-        { withCredentials: true }
-      );
+      await axiosSecure.post(`/bookings`, {
+        facility_id: facility._id,
+        facility_name: facility.name,
+        user_email: user.email,
+        booking_date: formData.booking_date,
+        time_slot: formData.time_slot,
+        hours: formData.hours,
+        total_price: totalPrice,
+        status: "pending",
+      });
       toast.success("Booking confirmed successfully!");
       navigate("/my-bookings");
     } catch (error) {

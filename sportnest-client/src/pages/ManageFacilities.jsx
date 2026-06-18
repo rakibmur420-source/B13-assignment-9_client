@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuth from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import Loading from "../components/Loading";
 import { FaEdit, FaTrash, FaPlusCircle, FaTimesCircle } from "react-icons/fa";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -15,6 +15,7 @@ const sportTypes = [
 
 const ManageFacilities = () => {
   const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,10 +26,7 @@ const ManageFacilities = () => {
   const fetchMyFacilities = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${API_URL}/facilities/owner/${user.email}`,
-        { withCredentials: true }
-      );
+      const res = await axiosSecure.get(`/facilities/owner/${user.email}`);
       setFacilities(res.data);
     } catch {
       toast.error("Failed to fetch facilities!");
@@ -46,7 +44,7 @@ const ManageFacilities = () => {
     const confirmed = window.confirm("Are you sure you want to delete this facility?");
     if (!confirmed) return;
     try {
-      await axios.delete(`${API_URL}/facilities/${id}`, { withCredentials: true });
+      await axiosSecure.delete(`/facilities/${id}`);
       toast.success("Facility deleted.");
       fetchMyFacilities();
     } catch {
@@ -84,11 +82,7 @@ const ManageFacilities = () => {
     e.preventDefault();
     setUpdateLoading(true);
     try {
-      await axios.put(
-        `${API_URL}/facilities/${editFacility._id}`,
-        editFacility,
-        { withCredentials: true }
-      );
+      await axiosSecure.put(`/facilities/${editFacility._id}`, editFacility);
       toast.success("Facility updated successfully!");
       setEditFacility(null);
       fetchMyFacilities();
