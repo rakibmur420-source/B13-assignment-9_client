@@ -7,75 +7,6 @@ import Loading from "../components/Loading";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-const DEFAULT_FACILITIES = [
-  {
-    _id: "default-1",
-    name: "Green Turf Football Ground",
-    facility_type: "Football",
-    image: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=600&auto=format&fit=crop",
-    location: "Gulshan, Dhaka",
-    price_per_hour: 50,
-    capacity: 22,
-    available_slots: ["06:00 AM - 07:00 AM", "07:00 AM - 08:00 AM"],
-    description: "Premium football turf with floodlights.",
-  },
-  {
-    _id: "default-2",
-    name: "Smash Badminton Arena",
-    facility_type: "Badminton",
-    image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&auto=format&fit=crop",
-    location: "Dhanmondi, Dhaka",
-    price_per_hour: 30,
-    capacity: 4,
-    available_slots: ["08:00 AM - 09:00 AM", "09:00 AM - 10:00 AM", "10:00 AM - 11:00 AM"],
-    description: "Professional indoor badminton courts.",
-  },
-  {
-    _id: "default-3",
-    name: "Olympic Swimming Pool",
-    facility_type: "Swimming",
-    image: "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600&auto=format&fit=crop",
-    location: "Banani, Dhaka",
-    price_per_hour: 40,
-    capacity: 20,
-    available_slots: ["06:00 AM - 07:00 AM", "07:00 AM - 08:00 AM"],
-    description: "Olympic size swimming pool with trained staff.",
-  },
-  {
-    _id: "default-4",
-    name: "Roland Garros Tennis Court",
-    facility_type: "Tennis",
-    image: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&auto=format&fit=crop",
-    location: "Uttara, Dhaka",
-    price_per_hour: 60,
-    capacity: 4,
-    available_slots: ["04:00 PM - 05:00 PM", "05:00 PM - 06:00 PM"],
-    description: "Premium clay and hard tennis courts.",
-  },
-  {
-    _id: "default-5",
-    name: "Premier Cricket Ground",
-    facility_type: "Cricket",
-    image: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=600&auto=format&fit=crop",
-    location: "Mirpur, Dhaka",
-    price_per_hour: 80,
-    capacity: 22,
-    available_slots: ["08:00 AM - 09:00 AM", "09:00 AM - 10:00 AM"],
-    description: "Full size cricket ground with practice nets.",
-  },
-  {
-    _id: "default-6",
-    name: "Elite Basketball Court",
-    facility_type: "Basketball",
-    image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&auto=format&fit=crop",
-    location: "Mohammadpur, Dhaka",
-    price_per_hour: 35,
-    capacity: 10,
-    available_slots: ["03:00 PM - 04:00 PM", "04:00 PM - 05:00 PM"],
-    description: "Indoor basketball court with professional flooring.",
-  },
-];
-
 const ITEMS_PER_PAGE = 6;
 
 const AllFacilities = () => {
@@ -96,37 +27,9 @@ const AllFacilities = () => {
       const res = await axios.get(`${API_URL}/facilities`, {
         params: { search, type },
       });
-      const dbData = res.data || [];
-
-      // Filter defaults by search & type client-side
-      const filteredDefaults = DEFAULT_FACILITIES.filter((f) => {
-        const matchSearch = search
-          ? f.name.toLowerCase().includes(search.toLowerCase()) ||
-            f.facility_type.toLowerCase().includes(search.toLowerCase())
-          : true;
-        const matchType = type ? f.facility_type === type : true;
-        return matchSearch && matchType;
-      });
-
-      if (dbData.length < 6) {
-        const existingNames = dbData.map((f) => f.name.toLowerCase());
-        const extras = filteredDefaults.filter(
-          (f) => !existingNames.includes(f.name.toLowerCase())
-        );
-        setFacilities([...dbData, ...extras]);
-      } else {
-        setFacilities(dbData);
-      }
+      setFacilities(res.data || []);
     } catch {
-      const filteredDefaults = DEFAULT_FACILITIES.filter((f) => {
-        const matchSearch = search
-          ? f.name.toLowerCase().includes(search.toLowerCase()) ||
-            f.facility_type.toLowerCase().includes(search.toLowerCase())
-          : true;
-        const matchType = type ? f.facility_type === type : true;
-        return matchSearch && matchType;
-      });
-      setFacilities(filteredDefaults);
+      setFacilities([]);
     } finally {
       setLoading(false);
     }
@@ -142,10 +45,6 @@ const AllFacilities = () => {
   }, [search, type]);
 
   const handleBookNow = (id) => {
-    if (id.startsWith("default-")) {
-      if (!user) return navigate("/login");
-      return; // default facility — no detail page
-    }
     if (!user) return navigate("/login");
     navigate(`/facility/${id}`);
   };
