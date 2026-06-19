@@ -70,7 +70,7 @@ const Login = () => {
 
         {/* Form */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-          <div className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email Address
@@ -102,7 +102,7 @@ const Login = () => {
             </div>
 
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={loading}
               className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50"
             >
@@ -118,6 +118,7 @@ const Login = () => {
 
             {/* Google Login */}
             <button
+              type="button"
               onClick={handleGoogleLogin}
               className="w-full border-2 border-gray-200 dark:border-gray-700 hover:border-green-400 text-gray-700 dark:text-gray-200 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-3"
             >
@@ -128,7 +129,7 @@ const Login = () => {
               />
               Continue with Google
             </button>
-          </div>
+          </form>
 
           <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-6">
             Don't have an account?{" "}
